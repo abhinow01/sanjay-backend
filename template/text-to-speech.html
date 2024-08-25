@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Text to Speech</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #333;
+    }
+    #content {
+      background-color: #f4f4f4;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scraped Content</h1>
+  <div id="content"></div>
+  <button onclick="speakText()">Speak Text</button>
+  <button onclick="stopSpeaking()">Stop Speaking</button>
+
+  <script>
+    const text = `%TEXT%`;
+    document.getElementById('content').textContent = text;
+
+    function speakText() {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeaking() {
+      speechSynthesis.cancel();
+    }
+  </script>
+</body>
+</html>

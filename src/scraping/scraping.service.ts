@@ -1,5 +1,3 @@
-// src/scraping/scraping.service.ts
-
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer-core';
 
@@ -16,30 +14,29 @@ export class ScrapingService {
     try {
       const page = await browser.newPage();
       console.log(`Connected! Navigating to ${url}...`);
-      await page.goto(url);
-      
-      const client = await page.createCDPSession();
-      console.log('Waiting captcha to solve...');
-      // @ts-ignore: Ignore the type check for this specific line
-      const { status } = await client.send('Captcha.waitForSolve', {
-          detectTimeout: 10000,
-      });
-      console.log('Captcha solve status:', status);
-      
+      await page.goto(url, { waitUntil: 'networkidle2' });
+
+      await page.waitForSelector('article, main, body', { timeout: 10000 });
+
       console.log('Navigated! Scraping page content...');
-      // const html = await page.content();
-      // console.log(html);
-      // return html;
-      const textContent = await page.evaluate(()=>{
-        const removeElement = (element)=>{
-          element.remove();
-        }
-        document.querySelectorAll('script').forEach(removeElement);
-        document.querySelectorAll('style').forEach(removeElement);
-        return document.body.textContent;
-      })
-      console.log('Text content:', textContent.trim());
-      return textContent.trim();
+
+      const textContent = await page.evaluate(() => {
+        const removeElements = (selectors) => {
+          selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach(el => el.remove());
+          });
+        };
+
+        removeElements(['script', 'style', 'img', 'header', 'footer', 'nav', '.ad', '.advertisement', '.promo', '.sidebar']);
+
+        const mainContent = document.querySelector('article') || document.querySelector('main') || document.querySelector('body');
+        const text = mainContent ? mainContent.innerText : '';
+
+        return text.replace(/\s\s+/g, ' ').trim();
+      });
+
+      console.log('Text content:', textContent);
+      return textContent;
     } finally {
       await browser.close();
     }
